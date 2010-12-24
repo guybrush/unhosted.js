@@ -38,7 +38,7 @@ unhosted = new function() {
 	// PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 	var pkcs1pad2 = function(s,n) {//copied from the rsa.js script included in Tom Wu's jsbn library
 		if(n < s.length + 11) {
-			alert("Message too long for RSA");
+			console.error("Message too long for RSA");
 			return null;
 		}
 		var ba = new Array();
@@ -75,7 +75,7 @@ unhosted = new function() {
 	// Return the PKCS#1 RSA encryption of "text" as an even-length hex string
 	var RSAEncrypt = function(text, nick) {//copied from the rsa.js script included in Tom Wu's jsbn library
 		if((typeof keys[nick] === 'undefined') || (typeof keys[nick].n === 'undefined')) {
-			alert("user "+nick+" doesn't look like a valid unhosted account");
+			console.error("user "+nick+" doesn't look like a valid unhosted account");
 		}
 		var n = new BigInteger();	n.fromString(keys[nick].n, 16);
 		var m = pkcs1pad2(text,(n.bitLength()+7)>>3);	if(m == null) return null;
@@ -160,7 +160,7 @@ unhosted = new function() {
 		if(typeof keys[nick] == 'undefined') {
 			parts=nick.split('@', 2);
 			if(parts.length != 2) {
-				alert('attempt to use undefined key nick: '+nick+'. Did you forget to log in?');
+				console.error('attempt to use undefined key nick: '+nick+'. Did you forget to log in?');
 			}
 			that.importSubN({"r":parts[0],"c":parts[1]},nick,".n");
 		}
@@ -168,7 +168,7 @@ unhosted = new function() {
 	var checkFields = function(arr, fieldNames) {
 		for(field in fieldNames) {
 			if(typeof arr[fieldNames[field]] == 'undefined') {
-				alert('field '+fieldNames[field]+' missing from key: '+JSON.stringify(arr));
+				console.error('field '+fieldNames[field]+' missing from key: '+JSON.stringify(arr));
 				return;
 			}
 		}
@@ -202,7 +202,7 @@ unhosted = new function() {
 		try {
 			return JSON.parse(ret);
 		} catch(e) {
-			alert('Non-JSON response to GET command:'+ret);
+			console.error('Non-JSON response to GET command:'+ret);
 			return null;
 		}
 	}
@@ -238,7 +238,7 @@ unhosted = new function() {
 		}
 		ret = sendPost("protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign+'&WriteCaps='+keys[nick].w, keys[nick].c);
 		if(ret != '"OK"') {
-			alert(ret);
+			console.error(ret);
 		}
 		return ret;
 	}
@@ -249,7 +249,7 @@ unhosted = new function() {
 		var PubSign = makePubSign(nick, cmd);
 		var ret = sendPost("protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign+'&WriteCaps='+keys[nick].w, keys[nick].c);
 		if(ret != '"OK"') {
-			alert(ret);
+			console.error(ret);
 		}
 		return ret;
 	}
@@ -267,7 +267,7 @@ unhosted = new function() {
 		var PubSign = makePubSign(fromNick, cmd);
 		var ret = sendPost("protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign, keys[toNick].c);
 		if(ret != '"OK"') {
-			alert(ret);
+			console.error(ret);
 		}
 		return ret;
 	}
@@ -284,7 +284,7 @@ unhosted = new function() {
 		try {
 			ret = JSON.parse(retJson);
 		} catch (e) {
-			alert('Non-JSON response to RECEIVE command:'+ret);
+			console.error('Non-JSON response to RECEIVE command:'+ret);
 			ret = null;
 		}
 		if(ret==null) {
