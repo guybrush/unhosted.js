@@ -1,50 +1,52 @@
 <html>
-<script language="JavaScript" type="text/javascript" src="../../unhosted/prng4.js"></script>
-<script language="JavaScript" type="text/javascript" src="../../unhosted/rng.js"></script>
-<script language="JavaScript" type="text/javascript" src="../../unhosted/rijndael.js"></script>
-<script language="JavaScript" type="text/javascript" src="../../unhosted/sha1.js"></script>
-<script language="JavaScript" type="text/javascript" src="../../unhosted/jsbn.js"></script>
-<script language="JavaScript" type="text/javascript" src="../../unhosted/unhosted.js"></script>
 <script language="JavaScript" type="text/javascript" src="hutch.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../unhosted/loader.js"></script>
 <script>
-function login() {
+    var login = null;
+var retrieveAddressBook = null;
+var showAddressBook = null;
+var receiveStars = null;
+var addAddress = null;
+loadUnhosted('../../unhosted', function(){
+    login = function login() {
 	var meKey = {
-		"r":document.getElementById("r").value,
-		"c":document.getElementById("c").value,
-		"w":document.getElementById("w").value,
-		"d":document.getElementById("d").value};
+	    "r":document.getElementById("r").value,
+	    "c":document.getElementById("c").value,
+	    "w":document.getElementById("w").value,
+	    "d":document.getElementById("d").value};
 	//me is a global variable in hutch2.js - TODO: should make this nicer!
 	me = meKey.r+"@"+meKey.c;
 	unhosted.importPubNS(meKey, me, ".n", ".s");
-//	unhosted.importSubN(meKey, me, ".n");
-}
-function retrieveAddressBook() {
+        //	unhosted.importSubN(meKey, me, ".n");
+    }
+    retrieveAddressBook = function retrieveAddressBook() {
 	var addresses = unhosted.get(me, ".addr");
 	if(addresses==null) {
-		addresses = {};
+	    addresses = {};
 	}
 	return addresses;
-}
-function showAddressBook(addresses) {
+    }
+    showAddressBook = function showAddressBook(addresses) {
 	var addrBook = "<table border='1'>";
 	for(i in addresses) {
-		addrBook += "<tr><td>"+i+"</td><td>";
-		if(hutch.hutch(i, me)) {
-			addrBook += "OK";
-			
-		} else {
-			addrBook += "pending...";
-		}
-		addrBook += "</td></tr>";
+	    addrBook += "<tr><td>"+i+"</td><td>";
+	    if(hutch.hutch(i, me)) {
+		addrBook += "OK";
+
+	    } else {
+		addrBook += "pending...";
+	    }
+	    addrBook += "</td></tr>";
 	}
 	addrBook += "</table>";
-	
+
 	document.getElementById("addrBook").innerHTML = addrBook;
-}
-function receiveStars() {
+    }
+
+    receiveStars = function receiveStars() {
 	hutch.receiveRecommendations();
-}
-function addAddress() {
+    }
+    addAddress = function addAddress() {
 	addresses = retrieveAddressBook();
 	var hisR = document.getElementById("r_a").value;
 	var hisC = document.getElementById("c_a").value;
@@ -54,7 +56,9 @@ function addAddress() {
 	hutch.meet(guid);
 	unhosted.set(me, ".addr", addresses);
 	showAddressBook(addresses);
-}
+    }
+});
+
 </script>
 <body>
 <H2>This code is only for demonstration and not safe to run in production.</H2>
@@ -74,7 +78,7 @@ password: <textarea id="w" rows="1" cols="6">0249e</textarea>_<textarea id="d" r
 	<div id="addrBook"/>
 </p></td></tr>
 </table>
-<input type="submit" value="update '.stars'-key" onclick="receiveStars();"/> 
+<input type="submit" value="update '.stars'-key" onclick="receiveStars();"/>
 and try to <input type="submit" value="hutch" onclick="showAddressBook(retrieveAddressBook());"/> all addressbook entries<br/>
 
 </body>
