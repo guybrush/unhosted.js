@@ -5,11 +5,11 @@ define(['./crypto/rsa'
        , module);
 
 function module(RsaKey, sha1, pidCrypt, BigInteger){
-    
+
     var crypto = function crypto(){
-        
+        this.aesBits = 128;
     }
-    
+
     crypto.prototype = {
         rsa: {
             /**
@@ -24,7 +24,7 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
                 this.n = N;
                 this.e = E;
             },
-            
+
             /**
              * RSA private key constructor.
              *
@@ -37,7 +37,7 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
                 this.n = N;
                 this.d = D;
             },
-            
+
             /**
              * Encrypt a plain text message with a public key
              *
@@ -50,7 +50,7 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
                 var ciphertext = key.encrypt(plaintxt);
                 return ciphertext;
             },
-            
+
             /**
              * Decrypt a cipher text with a private key
              *
@@ -68,7 +68,14 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
                 return plaintext;
             },
 
+            /**
+             * Sign a message with a private key using SHA-1 as hash algorithm
+             *
+             * @param {String} message The message to be signed
+             * @param {rsa.PrivKey} privKey The private key to sign the message with
+             */
             signSHA1: function rsaSign(message, privKey){
+                // TODO: revise this code, I am not sure if this is right
                 var key = new RsaKey();
                 key.setPrivate(privKey.n, privKey.d, '0', 16 /* hex */);
 
@@ -78,8 +85,33 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
 
                 return sig;
             }
+        }, // crypto.rsa
+
+        aes: {
+            /**
+             * Encrypt a plain text with AES-CBC
+             *
+             * @param {String} plaintext The string to be encrypted
+             * @param {String} key The password to encrypt the string
+             */
+            encryptCBC: function(plaintext, key){
+                var aes = new pidCrypt.AES.CBC();
+                var ciphertext = aes.encryptText(plaintext, key, {nBits: this.aesBits});
+            },
+
+            /**
+             * Decrypt a cipher text with AES-CBC
+             *
+             * @param {String} ciphertext The string to be decrypted
+             * @param {String} key The password to use for decryption
+             */
+            decryptCBC: function(ciphertext, key){
+                var aes = new pidCrypt.AES.CBC();
+                aes.decryptText(ciphertext, key, {nBits: this.aesBits});
+            }
         }
-    }
-    
+
+    } // crypto
+
     return crypto;
 }
