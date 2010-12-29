@@ -32,7 +32,7 @@ function byte2Hex(b) {
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s,n) {
     if(n < s.length + 11) {
-        alert("Message too long for RSA");
+        throw new Error("Message too long for RSA");
         return null;
     }
     var ba = new Array();
@@ -71,7 +71,7 @@ function RSASetPublic(N,E,radix) {
         this.e = parseInt(E,radix);
     }
     else
-        alert("Invalid RSA public key");
+        throw new Error("Invalid RSA public key");
 }
 
 // Perform raw public operation on "x": return x^e (mod n)
@@ -130,7 +130,7 @@ function RSASetPrivate(N,E,D,radix) {
         this.d = parseBigInt(D,radix);
     }
     else
-        alert("Invalid RSA private key");
+        throw new Error("Invalid RSA private key");
 }
 
 // Set the private key fields N, e, d and CRT params from hex strings
@@ -147,7 +147,7 @@ function RSASetPrivateEx(N,E,D,P,Q,DP,DQ,C,radix) {
         this.coeff = parseBigInt(C,radix);
     }
     else
-        alert("Invalid RSA private key");
+        throw new Error("Invalid RSA private key");
 }
 
 // Generate a new random private key B bits long, using public expt E
@@ -202,7 +202,6 @@ function RSADoPrivate(x) {
 // "ctext" is an even-length hex string and the output is a plain string.
 function RSADecrypt(ctext) {
     var c = parseBigInt(ctext, 16);
-    alert(ctext);
     var m = this.doPrivate(c);
     if(m == null) return null;
     return pkcs1unpad2(m, (this.n.bitLength()+7)>>3);
