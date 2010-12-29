@@ -44,10 +44,10 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
              * @param {String} plaintext The string to be encrypted
              * @param {rsa.PubKey} pubKey The RSA public key
              */
-            encrypt: function rsaEncrypt(plaintxt, pubKey){
+            encrypt: function rsaEncrypt(plaintext, pubKey){
                 var key = new RsaKey();
                 key.setPublic(pubKey.n, pubKey.e, 16 /* hex */);
-                var ciphertext = key.encrypt(plaintxt);
+                var ciphertext = key.encrypt(plaintext);
                 return ciphertext;
             },
 
@@ -63,8 +63,8 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
                 // so just pass 0 as we only do decryption which does not need
                 // the public exponent
 
-                key.setPrivate(privKey.n, privKey.d, '0', 16 /* hex */);
-                var plaintext = key.encrypt(plaintxt);
+                key.setPrivate(privKey.n, '10001', privKey.d, 16 /* hex */);
+                var plaintext = key.decrypt(ciphertext);
                 return plaintext;
             },
 
