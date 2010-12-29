@@ -103,16 +103,27 @@ unhosted = new function() {
         return hexSign;
     }
 
-    var sendPost = function(post, cloud) {   // this function implements synchronous AJAX to a cloud
+    var sendPost = function(post, cloud, callback) {   // this function implements synchronous AJAX to a cloud
         if (typeof cloud == 'undefined') {
             return 'error, attempted to connect to an undefined host.';
         }
-        xmlhttp=new XMLHttpRequest();
+        var xmlhttp = null;
+        if (window && window.ActiveXObject) {
+            if (window.location.protocol !== 'file:') {
+                try {
+                  xmlhttp = new window.XMLHttpRequest();
+                } catch(e) {}
+            }
+            try {
+                xmlhttp = new window.ActiveXObject("Microsoft.XMLHTTP");
+            } catch(e) {}
+        }
+        xmlhttp = new XMLHttpRequest();
         // xmlhttp.open("POST","http://example.unhosted.org/",false);
         xmlhttp.open("POST","http://"+cloud+"/unhosted/cloudside/unhosted.php",false);
         xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
         xmlhttp.send(post);
-        return xmlhttp.responseText;
+        callback && callback(null, xmlhttp.responseText);
     }
 
     var checkPubSign = function(cmd, PubSign, nick_n) {//check a signature. based on rsa-sign.js. uses Tom Wu's jsbn library.
@@ -198,16 +209,16 @@ unhosted = new function() {
     this.rawGet = function(nick, keyPath) { // used for starskey and by wappbook login bootstrap to retrieve key.n and key.s
         checkNick(nick);
         var cmd = JSON.stringify({"method":"GET", "chan":keys[nick].r, "keyPath":keyPath});
-        var ret = sendPost("protocol=UJ/0.1&cmd="+cmd, keys[nick].c);
-        if (ret == "") {
-            return null;
-        }
-        try {
-            return JSON.parse(ret);
-        } catch(e) {
-            console.error('Non-JSON response to GET command:'+ret);
-            return null;
-        }
+        sendPost( "protocol=UJ/0.1&cmd="+cmd, keys[nick].c, function(err, res) {
+            if (res == "") {
+                callback('error');
+            }
+            try {
+                callback(null, JSON.parse(res));
+            } catch(e) {
+                callback('Non-JSON response to GET command:'+res);
+            }
+        });
     }
     this.get = function(nick, keyPath) { // execute a UJ/0.1 GET command
         checkNick(nick);
@@ -223,40 +234,60 @@ unhosted = new function() {
             return "ERROR - PubSign "+sig+" does not correctly sign "+cmdStr+" for key "+keys[nick].n;
         }
     }
-    this.rawSet = function(nick, keyPath, value, useN) {
+    this.rawSet = function(nick, keyPath, value, useN, callback) {
         checkNick(nick);
         var cmd, PubSign, ret;
         if (useN) {
-            // this is two-step encryption. first we Rijndael-encrypt value symmetrically (with the single-use var seskey). The result goes into 'value' in the cmd.
+            // this is two-step encryption. first we Rijndael-encrypt value 
+            // symmetrically (with the single-use var seskey). The result goes 
+            // into 'value' in the cmd.
             var bnSeskey = new BigInteger(128,1,rng); // rijndael function we use uses a 128-bit key
             var seskey = bnSeskey.toString(16);
             var encr = byteArrayToHex(rijndaelEncrypt(value, hexToByteArray(seskey), 'ECB'));
-            // Then, we RSA-encrypt var seskey asymmetrically with nick's public RSA.n, and that encrypted session key goes into 'ses' in the cmd. See also this.receive.
+            // Then, we RSA-encrypt var seskey asymmetrically with nick's public 
+            // RSA.n, and that encrypted session key goes into 'ses' in the cmd. 
+            // See also this.receive.
             var encrSes = RSAEncrypt(seskey, nick);
-            cmd = JSON.stringify({"method":"SET", "chan":keys[nick].r, "keyPath":keyPath, "value":encr, "ses":encrSes});
+            cmd = JSON.stringify( { "method":"SET", "chan":keys[nick].r
+                                  , "keyPath":keyPath, "value":encr, "ses":encrSes
+                                  });
             PubSign = makePubSign(nick, cmd);
         } else {
-            cmd = JSON.stringify({"method":"SET", "chan":keys[nick].r, "keyPath":keyPath, "value":value});
+            cmd = JSON.stringify( { "method":"SET", "chan":keys[nick].r
+                                  , "keyPath":keyPath, "value":value
+                                  });
             PubSign = '';
         }
-        ret = sendPost("protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign+'&WriteCaps='+keys[nick].w, keys[nick].c);
+        sendPost( 'protocol=UJ/0.1&cmd='+cmd+'&PubSign='+PubSign+'&WriteCaps='+keys[nick].w
+                , keys[nick].c
+                , function(err, res) {
+            if (err) throw err;
+            else callback && callback(null, res)
+        });
         if (ret != '"OK"') {
             console.error(ret);
+            return null;
         }
-        return ret;
+        callback && callback(null, ret);
     }
-    this.set = function(nick, keyPath, value) { // execute a UJ/0.1 SET command
+    this.set = function(nick, keyPath, value, callback) { // execute a UJ/0.1 SET command
         checkNick(nick);
         var encr = byteArrayToHex(rijndaelEncrypt(JSON.stringify(value), hexToByteArray(keys[nick].s), 'ECB'));
         var cmd = JSON.stringify({"method":"SET", "chan":keys[nick].r, "keyPath":keyPath, "value":encr});
         var PubSign = makePubSign(nick, cmd);
-        var ret = sendPost("protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign+'&WriteCaps='+keys[nick].w, keys[nick].c);
+        sendPost( 'protocol=UJ/0.1&cmd='+cmd+'&PubSign='+PubSign+'&WriteCaps='+keys[nick].w
+                , keys[nick].c
+                , function(err, res) {
+            if (err) throw err;
+            else callback && callback(null, res)
+        });        
         if (ret != '"OK"') {
-            console.error(ret);
+            callback && callback('not OK', res)
+            return null;
         }
-        return ret;
+        callback && callback(null, res);
     }
-    this.send = function(fromNick, toNick, keyPath, value) { // execute a UJ/0.1 SEND command
+    this.send = function(fromNick, toNick, keyPath, value, callback) { // execute a UJ/0.1 SEND command
         checkNick(fromNick);
         checkNick(toNick);
         // this is two-step encryption. first we Rijndael-encrypt value symmetrically (with the single-use var seskey). The result goes into 'value' in the cmd.
@@ -268,11 +299,17 @@ unhosted = new function() {
         var cmd = JSON.stringify({"method":"SEND", "chan":keys[toNick].r, "keyPath":keyPath, "value":encr, "ses":encrSes,
                                   "SenderSub":{"r":keys[fromNick].r, "c":keys[fromNick].c, "n":keys[fromNick].n}});
         var PubSign = makePubSign(fromNick, cmd);
-        var ret = sendPost("protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign, keys[toNick].c);
+        sendPost( "protocol=UJ/0.1&cmd="+cmd+"&PubSign="+PubSign
+                , keys[toNick].c
+                , function(err, res) {
+            if (err) throw err;
+            else callback && callback(null, res);
+        });        
         if (ret != '"OK"') {
-            console.error(ret);
+            callback && callback('not OK', res);
+            return null;
         }
-        return ret;
+        callback && callback(null, res);
     }
     this.receive = function(nick, keyPath, andDelete) { // execute a UJ/0.1 GET command
         checkNick(nick);
@@ -282,42 +319,49 @@ unhosted = new function() {
             andDeleteBool = false;
         }
         var cmd = JSON.stringify({"method":"RECEIVE", "chan":keys[nick].r, "keyPath":keyPath, "delete":andDeleteBool});
-        var retJson = sendPost("protocol=UJ/0.1&cmd="+cmd+'&WriteCaps='+keys[nick].w, keys[nick].c);
-        var ret, cmdStr, sig, seskey, decrVal;
-        try {
-            ret = JSON.parse(retJson);
-        } catch (e) {
-            console.error('Non-JSON response to RECEIVE command:'+ret);
-            ret = null;
-        }
-        if (ret==null) {
-            return null;
-        }
-        var res = [];
-        for (msg in ret) {
-            cmdStr = JSON.stringify(ret[msg].cmd).replace("+", "%2B");
-            sig = ret[msg].PubSign; // careful: this PubSign refers to the sender's n (cmd.SenderSub.n), not the receiver's one (keys[nick].n)!
-            if (checkPubSign(cmdStr, sig, ret[msg].cmd.SenderSub.n) == true) {
-                try {
-                    // now we first need to RSA-decrypt the session key that will let us Rijdael-decrypt the actual value:
-                    seskey = RSADecrypt(ret[msg].cmd.ses, nick);
-                    if(seskey === null) {
-                        res.push({"body":'ERROR - seskey '+ret[msg].cmd.ses+' does not correctly decrypt, or have no private key (key.d) of '+nick,
+        sendPost( "protocol=UJ/0.1&cmd="+cmd+'&WriteCaps='+keys[nick].w
+                , keys[nick].c
+                , function(err, res) {
+            if (err) throw err;
+            else callback && callback(null, retJson);
+            var ret, cmdStr, sig, seskey, decrVal;
+            try {
+                ret = JSON.parse(retJson);
+            } catch (e) {
+                console.error('Non-JSON response to RECEIVE command:'+ret);
+                ret = null;
+            }
+            if (ret==null) {
+                callback('ret == null')
+                return null;
+            }
+            var res = [];
+            for (msg in ret) {
+                cmdStr = JSON.stringify(ret[msg].cmd).replace("+", "%2B");
+                sig = ret[msg].PubSign; // careful: this PubSign refers to the sender's n (cmd.SenderSub.n), not the receiver's one (keys[nick].n)!
+                if (checkPubSign(cmdStr, sig, ret[msg].cmd.SenderSub.n) == true) {
+                    try {
+                        // now we first need to RSA-decrypt the session key that will let us Rijdael-decrypt the actual value:
+                        seskey = RSADecrypt(ret[msg].cmd.ses, nick);
+                        if (seskey === null) {
+                            res.push({"body":'ERROR - seskey '+ret[msg].cmd.ses+' does not correctly decrypt, or have no private key (key.d) of '+nick,
+                                      "SenderSub":{"r":"not valid", "c":"not valid", "n":"not valid"}});
+                        } else {
+                            decrVal = byteArrayToString(rijndaelDecrypt(hexToByteArray(ret[msg].cmd.value), hexToByteArray(seskey), 'ECB'));
+                            res.push({"body":JSON.parse(decrVal), "SenderSub":ret[msg].cmd.SenderSub});
+                        }
+                    } catch (e) {
+                        res.push({"body":'ERROR - could not decrypt message.',
                                   "SenderSub":{"r":"not valid", "c":"not valid", "n":"not valid"}});
-                    } else {
-                        decrVal = byteArrayToString(rijndaelDecrypt(hexToByteArray(ret[msg].cmd.value), hexToByteArray(seskey), 'ECB'));
-                        res.push({"body":JSON.parse(decrVal), "SenderSub":ret[msg].cmd.SenderSub});
                     }
-                } catch (e) {
-                    res.push({"body":'ERROR - could not decrypt message.',
+                } else {
+                    res.push({"body":'ERROR - PubSign '+sig+' does not correctly sign '+cmdStr+' for key '+ret[msg].cmd.SenderSub.n,
                               "SenderSub":{"r":"not valid", "c":"not valid", "n":"not valid"}});
                 }
-            } else {
-                res.push({"body":'ERROR - PubSign '+sig+' does not correctly sign '+cmdStr+' for key '+ret[msg].cmd.SenderSub.n,
-                          "SenderSub":{"r":"not valid", "c":"not valid", "n":"not valid"}});
             }
-        }
-        return res; // have to find the proper way of doing foo[] = bar;
+            // return res; // have to find the proper way of doing foo[] = bar;
+            callback && callback(ret);
+        }); 
     }
     this.makeStarSign = function(signerNick, signeeNick) { // creates a star-object, signs it, and returns the signature
         checkNick(signerNick);
@@ -333,9 +377,13 @@ unhosted = new function() {
         var check = checkPubSign(star, StarSign, keys[signerNick].n);
         return check;
     }
+    
 }
 
+// note: following information is outdated! (now some of them are async)
+//
 //public functions:
+//
 //  this.importPub = function(writeCaps, nick) {//import a (pub) key to the keys[] variable
 //  this.importPubNS = function(writeCaps, nick, locationN, locationS) {
 //  this.importSub = function(readCaps, nick) {//import a (sub) key to the keys[] variable
