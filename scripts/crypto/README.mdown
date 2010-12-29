@@ -1,0 +1,5 @@
+Auto generated scripts. __DO NOT EDIT__
+=======================================
+
+see `build/commonjs-wrapper.node.js` and `build/wrap-crypto.node.js` for
+details.
