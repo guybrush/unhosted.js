@@ -1,4 +1,4 @@
-define(['./crypto/rsa'
+define(['./crypto/rsa-sign'
         , './crypto/sha1'
         , './crypto/aes_cbc'
         , './crypto/jsbn']
@@ -33,9 +33,10 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
              *
              * @constructor
              */
-            PrivKey: function(N, D){
+            PrivKey: function(N, D, E){
                 this.n = N;
                 this.d = D;
+                this.e = E;
             },
 
             /**
@@ -59,11 +60,8 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
              */
             decrypt: function rsaDecrypt(ciphertext, privKey){
                 var key = new RsaKey();
-                // For some reason setPrivate demands the public exponent(E) as well
-                // so just pass 0 as we only do decryption which does not need
-                // the public exponent
+                key.setPrivate(privKey.n, privKey.e, privKey.d, 16 /* hex */);
 
-                key.setPrivate(privKey.n, '10001', privKey.d, 16 /* hex */);
                 var plaintext = key.decrypt(ciphertext);
                 return plaintext;
             },
@@ -72,18 +70,28 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
              * Sign a message with a private key using SHA-1 as hash algorithm
              *
              * @param {String} message The message to be signed
-             * @param {rsa.PrivKey} privKey The private key to sign the message with
+             * @param {rsa.PrivKey} privKey The private key to sign the message
+             * with
              */
             signSHA1: function rsaSign(message, privKey){
-                // TODO: revise this code, I am not sure if this is right
                 var key = new RsaKey();
-                key.setPrivate(privKey.n, privKey.d, '0', 16 /* hex */);
+                key.setPrivate(privKey.n, privKey.e, privKey.d, 16 /* hex */);
 
-                var hash = sha1(message);
-                var x = new BigInteger(hash, 16);
-                var sig = key.doPrivate(x);
+                return key.signStringWithSHA1(message);
+            },
 
-                return sig;
+            /**
+             * Verify the signature of a message using SHA-1 as hash algorithm
+             *
+             * @param {String} signature The signature to be checked
+             * @param {String} message The message to be validated
+             * @param {rsa.PubKey} pubKey The RSA public key to use for verification
+             */
+            verifySHA1: function rsaVerify(signature, message, pubKey){
+                var key = new RsaKey();
+                key.setPublic(pubKey.n, pubKey.e, 16 /* hex */);
+
+                return key.verifyHexSignatureForMessage(signature, message);
             }
         }, // crypto.rsa
 
@@ -96,7 +104,8 @@ function module(RsaKey, sha1, pidCrypt, BigInteger){
              */
             encryptCBC: function(plaintext, key){
                 var aes = new pidCrypt.AES.CBC();
-                var ciphertext = aes.encryptText(plaintext, key, {nBits: this.aesBits});
+                var ciphertext = aes.encryptText(plaintext, key
+                                                 , {nBits: this.aesBits});
             },
 
             /**
