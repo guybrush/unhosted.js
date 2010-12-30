@@ -1,3 +1,4 @@
+define(['./crypto'],
 /*
  * Unhosted JS library.
  *  Handles comms with unhosted storage node for unhosted web apps.
@@ -18,7 +19,7 @@
  */
 
 /*GLOBAL SINGLETON:*/
-unhosted = new function() {
+new function() {
     //private:
     var that = this;
     var keys = {}; // each one should contain fields r,c,n[,s[,d]] (r,c in ASCII; n,s,d in HEX)
@@ -379,7 +380,7 @@ unhosted = new function() {
     }
     
 }
-
+);
 // note: following information is outdated! (now some of them are async)
 //
 //public functions:
