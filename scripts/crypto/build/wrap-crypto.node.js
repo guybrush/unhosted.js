@@ -32,6 +32,13 @@ var o = {
         }
         , '.exports': 'RSAKey'
     }
+    , 'rsa-sign.js': {
+        '.depends': {
+            'RSAKey': './rsa'
+            , 'sha1': './sha1'
+        }
+        , '.exports': 'RSAKey'
+    }
     , 'pidCrypt/pidcrypt.js': {
         '.exports': 'pidCrypt'
     }
