@@ -27,10 +27,8 @@ var WrapFile = function WrapFile(file, output, exports, imports, dependencies, c
         }
         
         var imports_str = '';
-        console.log(imports instanceof Array);
         if(imports instanceof Array) {
             imports_str = imports.join(';\n') + ';\n';
-            console.log(imports_str);
         }
         
         // Construct the CommonJS module definition
