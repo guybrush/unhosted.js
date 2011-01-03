@@ -2,8 +2,9 @@
 // AUTO-GENERATED FROM ../original-libs/pidCrypt/aes_core.js __DO NOT EDIT__
 //
 
-define(['./pidcrypt', './pidcrypt_util']
-, function(pidCrypt, pidCryptUtil){
+define(['./pidcrypt_util']
+, function(pidCryptUtil){
+var pidCrypt = {};
 
 /*!Copyright (c) 2009 pidder <www.pidder.com>*/
 /*----------------------------------------------------------------------------*/
@@ -245,5 +246,5 @@ expanded key 'key'.
   }
 }
 
-return pidCrypt;
+return pidCrypt.AES;
 });

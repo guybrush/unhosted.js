@@ -45,20 +45,33 @@ var o = {
     , 'pidCrypt/pidcrypt_util.js': {
         '.exports': 'pidCryptUtil'
     }
+    , 'pidCrypt/md5.js': {
+        '.exports': 'pidCrypt.MD5'
+        , '.imports': [
+            'var pidCrypt = {}'
+        ]
+    }
     , 'pidCrypt/aes_core.js': {
         '.depends': {
-            'pidCrypt': './pidcrypt'
-            , 'pidCryptUtil': './pidcrypt_util'
+            'pidCryptUtil': './pidcrypt_util'
         }
-        , '.exports': 'pidCrypt'
+        , '.imports': [
+            'var pidCrypt = {}'
+        ]
+        , '.exports': 'pidCrypt.AES'
     }
     , 'pidCrypt/aes_cbc.js': {
         '.depends': {
-            // this already includes the core pidCrypt stuff
-            'pidCrypt': './aes_core'
+            'pidCrypt': './pidcrypt'
             , 'pidCryptUtil': './pidcrypt_util'
+            , 'MD5': './md5'
+            , 'AES': './aes_core'
         }
-        , '.exports': 'pidCrypt'
+        , '.imports': [
+            'pidCrypt.MD5 = MD5'
+            , 'pidCrypt.AES = AES'
+        ]
+        , '.exports': 'pidCrypt.AES.CBC'
     }
 };
 

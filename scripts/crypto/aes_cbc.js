@@ -2,8 +2,10 @@
 // AUTO-GENERATED FROM ../original-libs/pidCrypt/aes_cbc.js __DO NOT EDIT__
 //
 
-define(['./aes_core', './pidcrypt_util']
-, function(pidCrypt, pidCryptUtil){
+define(['./pidcrypt', './pidcrypt_util', './md5', './aes_core']
+, function(pidCrypt, pidCryptUtil, MD5, AES){
+pidCrypt.MD5 = MD5;
+pidCrypt.AES = AES;
 
  /*----------------------------------------------------------------------------*/
  // Copyright (c) 2009 pidder <www.pidder.com>
@@ -420,5 +422,5 @@ pidCrypt.AES.CBC.prototype.decryptRaw = function(byteArray) {
 }
 
 
-return pidCrypt;
+return pidCrypt.AES.CBC;
 });
