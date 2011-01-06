@@ -23,23 +23,38 @@ function module(RsaKey, sha1, AES_CBC, BigInteger){
              * @constructor
              */
             PubKey: function(N, E){
-                this.n = N;
-                this.e = E;
+                if(typeof N === 'object' && typeof E === 'undefined') {
+                    this.n = N.n;
+                    this.e = N.e;
+                } else {
+                    this.n = N;
+                    this.e = E;
+                }
             },
 
             /**
              * RSA private key constructor.
              *
              * @param {String} N Hex encoded modulus
-             * @param {String} D Hex encoded secret (decryption) exponent
              * @param {String} E Hex encoded public exponent
+             * @param {String} D Hex encoded secret (decryption) exponent
              *
              * @constructor
              */
-            PrivKey: function(N, D, E){
-                this.n = N;
-                this.d = D;
-                this.e = E;
+            PrivKey: function(N, E, D){
+                if(typeof N === 'object'
+                   && typeof E === 'undefined'
+                   && typeof D === 'undefined')
+                {
+                    this.n = N.n;
+                    this.e = N.e;
+                    this.d = N.d;
+                } else {
+                    this.e = E;
+                    this.n = N;
+                    this.d = D;
+                }
+            },
             },
 
             /**
