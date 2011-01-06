@@ -55,6 +55,17 @@ function module(RsaKey, sha1, AES_CBC, BigInteger){
                     this.d = D;
                 }
             },
+
+            /**
+             * Get a fingerprint for a rsa key (public or private)
+             *
+             * @param {rsa.PubKey or rsa.PrivKey} key The key fingerprint is to
+             * be made of
+             * @return Returns the sha1 hash of the key public exponent (e)
+             * concatenated with the key modulus (n)
+             */
+            keyID: function keyId(key){
+                return sha1(key.e + key.n);
             },
 
             /**
