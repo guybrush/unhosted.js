@@ -1,13 +1,14 @@
 define(['./crypto/rsa-sign'
         , './crypto/sha1'
         , './crypto/aes_cbc'
-        , './crypto/jsbn']
+        , './crypto/jsbn'
+        , './crypto/rng']
        , module);
 
 
 //
 
-function module(RsaKey, sha1, AES_CBC, BigInteger){
+function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
     var crypto = {
         // options
         aesBits: 128,
@@ -151,6 +152,14 @@ function module(RsaKey, sha1, AES_CBC, BigInteger){
                                                 , {nBits: crypto.aesBits});
 
                 return plaintext;
+            }
+        },
+
+        random: {
+            // !!! TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO !!!
+            // Proper Cryptographically secure rng (from sjcl)
+            bytes: function(n) {
+                return (new Random()).nextBytes(n);
             }
         }
 
