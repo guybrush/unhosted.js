@@ -1,4 +1,3 @@
-define(['./crypto'],
 /*
  * Unhosted JS library.
  *  Handles comms with unhosted storage node for unhosted web apps.
@@ -18,84 +17,45 @@ define(['./crypto'],
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*GLOBAL SINGLETON:*/
-new function() {
+define(['./crypto'
+        , './key-storage'
+        , './util'
+        , './methods'], unhostedModule);
+
+function unhostedModule(crypto, keyStorage, URL, util, methods){
+    var JSONtoCGI = util.JSONtoCGI;
+    var sendPost = util.sendPost;
+
+    var options = {
+        postURI: '/unhosted/cloudside/unhosted.php'
+        , ajaxFailure: function(){}
+    }
+
+    var Unhosted = function(userID, nodeAddress){
+        // TODO better checks
+        if(!nodeAddress) {
+            throw new Error('Invalid node address');
+        }
+
+        if (typeof userID === 'undefined' || !userID.match(/[\S+@\S+]/)) {
+            throw new Error('Invalid userID');
+        }
+
+        this.userID = userID;
+        this.address = nodeAddress;
+        this.postURI = options.postURI;
+    }
+
+    Unhosted.prototype = methods;
+
+    return Unhosted;
+} // function unhostedModule(..
+
+var u = function() {
     //private:
     var that = this;
     var keys = {}; // each one should contain fields r,c,n[,s[,d]] (r,c in ASCII; n,s,d in HEX)
-    var rng = new SecureRandom(); // for padding
 
-    var RSASign = function(sHashHex, nick) { // this function copied from the rsa.js script included in Tom Wu's jsbn library
-        var n = new BigInteger();   n.fromString(keys[nick].n, 16);
-        var sMid = "";  var fLen = (n.bitLength() / 4) - sHashHex.length - 6;
-        for (var i = 0; i < fLen; i += 2) {
-            sMid += "ff";
-        }
-        hPM = "0001" + sMid + "00" + sHashHex;  // this pads the hash to desired length - not entirely sure whether those 'ff' should be random bytes for security or not
-        var x = new BigInteger(hPM, 16);        // turn the padded message into a jsbn BigInteger object
-        var d = new BigInteger();   d.fromString(keys[nick].d, 16);
-        return x.modPow(d, n);
-    }
-
-    // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
-    var pkcs1pad2 = function(s,n) { // copied from the rsa.js script included in Tom Wu's jsbn library
-        if (n < s.length + 11) {
-            console.error("Message too long for RSA");
-            return null;
-        }
-        var ba = new Array();
-        var i = s.length - 1;
-        while (i >= 0 && n > 0) ba[--n] = s.charCodeAt(i--);
-        ba[--n] = 0;
-        var x = new Array();
-        while (n > 2) { // random non-zero pad
-            x[0] = 0;
-            while (x[0] == 0) rng.nextBytes(x);
-            ba[--n] = x[0];
-        }
-        ba[--n] = 2;
-        ba[--n] = 0;
-        return new BigInteger(ba);
-    }
-
-    // Undo PKCS#1 (type 2, random) padding and, if valid, return the plaintext
-    var pkcs1unpad2 = function(d,n) { // copied from the rsa.js script included in Tom Wu's jsbn library
-        var b = d.toByteArray();
-        var i = 0;
-        while (i < b.length && b[i] == 0) ++i;
-        if (b.length-i != n-1 || b[i] != 2)
-            return null;
-        ++i;
-        while (b[i] != 0)
-            if (++i >= b.length) return null;
-        var ret = "";
-        while (++i < b.length)
-            ret += String.fromCharCode(b[i]);
-        return ret;
-    }
-
-    // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
-    var RSAEncrypt = function(text, nick) { // copied from the rsa.js script included in Tom Wu's jsbn library
-        if ((typeof keys[nick] === 'undefined') || (typeof keys[nick].n === 'undefined')) {
-            console.error("user "+nick+" doesn't look like a valid unhosted account");
-        }
-        var n = new BigInteger();   n.fromString(keys[nick].n, 16);
-        var m = pkcs1pad2(text,(n.bitLength()+7)>>3);   if (m == null) return null;
-        var c = m.modPowInt(parseInt("10001", 16), n);  if (c == null) return null;
-        var h = c.toString(16);
-        if ((h.length & 1) == 0) return h; else return "0" + h;
-    }
-
-    // Return the PKCS#1 RSA decryption of "ctext".
-    // "ctext" is an even-length hex string and the output is a plain string.
-    var RSADecrypt = function(ctext, nick) { // copied from rsa.js script included in Tom Wu's jsbn library
-        var c = new BigInteger(ctext, 16);
-        var n = new BigInteger();   n.fromString(keys[nick].n, 16);
-        var d = new BigInteger();   d.fromString(keys[nick].d, 16);
-        var m = c.modPow(d, n);
-        if (m == null) return null;
-        return pkcs1unpad2(m, (n.bitLength()+7)>>3);
-    }
 
     var makePubSign = function(nick, cmd) {  // this function based on the rsa.js script included in Tom Wu's jsbn and rsa-sign.js by [TODO: look up name of wikitl.jp(?)]
         var sHashHex = sha1.hex(cmd);          // this uses sha1.js to generate a sha1 hash of the command
@@ -104,28 +64,6 @@ new function() {
         return hexSign;
     }
 
-    var sendPost = function(post, cloud, callback) {   // this function implements synchronous AJAX to a cloud
-        if (typeof cloud == 'undefined') {
-            return 'error, attempted to connect to an undefined host.';
-        }
-        var xmlhttp = null;
-        if (window && window.ActiveXObject) {
-            if (window.location.protocol !== 'file:') {
-                try {
-                  xmlhttp = new window.XMLHttpRequest();
-                } catch(e) {}
-            }
-            try {
-                xmlhttp = new window.ActiveXObject("Microsoft.XMLHTTP");
-            } catch(e) {}
-        }
-        xmlhttp = new XMLHttpRequest();
-        // xmlhttp.open("POST","http://example.unhosted.org/",false);
-        xmlhttp.open("POST","http://"+cloud+"/unhosted/cloudside/unhosted.php",false);
-        xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-        xmlhttp.send(post);
-        callback && callback(null, xmlhttp.responseText);
-    }
 
     var checkPubSign = function(cmd, PubSign, nick_n) {//check a signature. based on rsa-sign.js. uses Tom Wu's jsbn library.
         var n = new BigInteger();   n.fromString(nick_n, 16);
@@ -221,6 +159,7 @@ new function() {
             }
         });
     }
+
     this.get = function(nick, keyPath) { // execute a UJ/0.1 GET command
         checkNick(nick);
         var ret = that.rawGet(nick, keyPath);
@@ -235,18 +174,19 @@ new function() {
             return "ERROR - PubSign "+sig+" does not correctly sign "+cmdStr+" for key "+keys[nick].n;
         }
     }
+
     this.rawSet = function(nick, keyPath, value, useN, callback) {
         checkNick(nick);
         var cmd, PubSign, ret;
         if (useN) {
-            // this is two-step encryption. first we Rijndael-encrypt value 
-            // symmetrically (with the single-use var seskey). The result goes 
+            // this is two-step encryption. first we Rijndael-encrypt value
+            // symmetrically (with the single-use var seskey). The result goes
             // into 'value' in the cmd.
             var bnSeskey = new BigInteger(128,1,rng); // rijndael function we use uses a 128-bit key
             var seskey = bnSeskey.toString(16);
             var encr = byteArrayToHex(rijndaelEncrypt(value, hexToByteArray(seskey), 'ECB'));
-            // Then, we RSA-encrypt var seskey asymmetrically with nick's public 
-            // RSA.n, and that encrypted session key goes into 'ses' in the cmd. 
+            // Then, we RSA-encrypt var seskey asymmetrically with nick's public
+            // RSA.n, and that encrypted session key goes into 'ses' in the cmd.
             // See also this.receive.
             var encrSes = RSAEncrypt(seskey, nick);
             cmd = JSON.stringify( { "method":"SET", "chan":keys[nick].r
@@ -281,7 +221,7 @@ new function() {
                 , function(err, res) {
             if (err) throw err;
             else callback && callback(null, res)
-        });        
+        });
         if (ret != '"OK"') {
             callback && callback('not OK', res)
             return null;
@@ -305,13 +245,14 @@ new function() {
                 , function(err, res) {
             if (err) throw err;
             else callback && callback(null, res);
-        });        
+        });
         if (ret != '"OK"') {
             callback && callback('not OK', res);
             return null;
         }
         callback && callback(null, res);
     }
+
     this.receive = function(nick, keyPath, andDelete) { // execute a UJ/0.1 GET command
         checkNick(nick);
         if (andDelete) {
@@ -362,7 +303,7 @@ new function() {
             }
             // return res; // have to find the proper way of doing foo[] = bar;
             callback && callback(ret);
-        }); 
+        });
     }
     this.makeStarSign = function(signerNick, signeeNick) { // creates a star-object, signs it, and returns the signature
         checkNick(signerNick);
@@ -378,9 +319,8 @@ new function() {
         var check = checkPubSign(star, StarSign, keys[signerNick].n);
         return check;
     }
-    
+
 }
-);
 // note: following information is outdated! (now some of them are async)
 //
 //public functions:
