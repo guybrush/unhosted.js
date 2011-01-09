@@ -159,7 +159,9 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
             // !!! TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO !!!
             // Proper Cryptographically secure rng (from sjcl)
             bytes: function(n) {
-                return (new Random()).nextBytes(n);
+                var bytes = new Array(n);
+                (new Random()).nextBytes(bytes);
+                return bytes;
             }
         }
 
