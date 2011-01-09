@@ -102,8 +102,8 @@ define(['./crypto'], function(crypto){
          * @param keyID The keyID (aka. fingerprint) of the rsaKey.
          * @return Returns the key as an instance of rsa.PrivKey
          */
-        retreivePrivKey: function(rsaKey){
-            return store(sessionStorage, rsaKey);
+        retreivePrivKey: function(keyID){
+            return retrive(sessionStorage, keyID);
         }
     }
 });
