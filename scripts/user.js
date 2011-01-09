@@ -33,4 +33,6 @@ define(['./crypto/sha1'], function(sha1){
         this.id = sha1(this.alias);
         callback(null, this.id);
     }
+
+    return User;
 });

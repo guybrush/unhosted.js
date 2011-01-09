@@ -22,7 +22,7 @@ define(['./crypto'
         , './util'
         , './methods'], unhostedModule);
 
-function unhostedModule(crypto, keyStorage, URL, util, methods){
+function unhostedModule(crypto, keyStorage, util, methods){
     var JSONtoCGI = util.JSONtoCGI;
     var sendPost = util.sendPost;
 
@@ -37,6 +37,7 @@ function unhostedModule(crypto, keyStorage, URL, util, methods){
             throw new Error('Invalid node address');
         }
 
+        this.proto = 'UJ/0.2'
         this.user = user;
         this.address = nodeAddress;
         this.postURI = options.postURI;

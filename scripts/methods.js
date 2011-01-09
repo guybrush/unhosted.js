@@ -8,12 +8,12 @@ function handleError(status, data, err_callback, ok_callback){
     } else {
         var res = JSON.parse(data);
         var err = new Error(res.message);
-        err.number = res.code;
+        // err.number = status;
         err_callback && err_callback(err);
     }
 }
 
-define(['./util', './key-storage.js', './crypto'], function(util, keyStorage, crypto){
+define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypto){
     var sendPost = util.sendPost;
 
     return {

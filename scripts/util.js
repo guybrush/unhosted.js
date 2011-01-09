@@ -52,7 +52,7 @@ var util = {
 
             if(state === DONE) {
                 callback && callback(null
-                                     , XMLHTTP.status
+                                     , xmlHTTP.status
                                      , xmlHTTP.responseText);
             }
         }

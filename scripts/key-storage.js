@@ -22,7 +22,7 @@ define(['./crypto'], function(crypto){
     var sessionStorageKeys = {};
     
     function store(storage, rsaKey){
-        var key = rsaKey.stringify(rsaKey);
+        var key = JSON.stringify(rsaKey);
         var keyType = storage === localStorage ? 'public' : 'private';
         var keyID = crypto.rsa.keyID(rsaKey)
         var keyPath = '/unhosted/rsaKeys/'
