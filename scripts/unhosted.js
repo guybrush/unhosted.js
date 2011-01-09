@@ -31,17 +31,13 @@ function unhostedModule(crypto, keyStorage, URL, util, methods){
         , ajaxFailure: function(){}
     }
 
-    var Unhosted = function(userID, nodeAddress){
+    var Unhosted = function(user, nodeAddress){
         // TODO better checks
         if(!nodeAddress) {
             throw new Error('Invalid node address');
         }
 
-        if (typeof userID === 'undefined' || !userID.match(/[\S+@\S+]/)) {
-            throw new Error('Invalid userID');
-        }
-
-        this.userID = userID;
+        this.user = user;
         this.address = nodeAddress;
         this.postURI = options.postURI;
     }
