@@ -2,18 +2,18 @@
  * This is the prototype of the class 'Unhosted' defined in unhosted.js
  */
 
-function handleError(status, data, callback){
+function handleError(status, data, err_callback, ok_callback){
     if(status == 200) {
-        callback && callback(null);
+        ok_callback && ok_callback(null);
     } else {
         var res = JSON.parse(data);
         var err = new Error(res.message);
         err.number = res.code;
-        callback && callback(err);
+        err_callback && err_callback(err);
     }
 }
 
-define(['./util', './key-storage.js' './crypto'], function(util, ,keyStorage, crypto){
+define(['./util', './key-storage.js', './crypto'], function(util, keyStorage, crypto){
     var sendPost = util.sendPost;
 
     return {
@@ -43,7 +43,7 @@ define(['./util', './key-storage.js' './crypto'], function(util, ,keyStorage, cr
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
-                handleError(status, data, callback);
+                handleError(status, data, callback, callback);
             });
         },
 
@@ -65,7 +65,9 @@ define(['./util', './key-storage.js' './crypto'], function(util, ,keyStorage, cr
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
-                handleError(status, data, callback);
+                handleError(status, data, callback, function ok(){
+                    callback && callback(null, data);
+                });
             });
         },
 
@@ -94,7 +96,7 @@ define(['./util', './key-storage.js' './crypto'], function(util, ,keyStorage, cr
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
-                handleError(status, data, callback);
+                handleError(status, data, callback, callback);
             });
         },
 
@@ -116,7 +118,9 @@ define(['./util', './key-storage.js' './crypto'], function(util, ,keyStorage, cr
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
-                handleError(status, data, callback);
+                handleError(status, data, callback, function ok(){
+                    callback && callback(null, data);
+                });
             });
         }
     }
