@@ -13,7 +13,7 @@ function handleError(status, data, callback){
     }
 }
 
-define(['./util', './crypto'], function(util, crypto){
+define(['./util', './key-storage.js' './crypto'], function(util, ,keyStorage, crypto){
     var sendPost = util.sendPost;
 
     return {
@@ -32,12 +32,14 @@ define(['./util', './crypto'], function(util, crypto){
                 , keyPath: keyPath
                 , value: value
             });
-
+            
+            var privKey = keyStorage.retrivePrivKey(this.user.keyID);
+            
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
                 , password: this.user.password
-                , sign: crypto.rsa.signSHA1(cmd, this.user.privKey)
+                , sign: crypto.rsa.signSHA1(cmd, privKey)
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
@@ -82,11 +84,13 @@ define(['./util', './crypto'], function(util, crypto){
                     , user: recipient.id
                     , keyPath: keyPath
             });
-
+            
+            var privKey = keyStorage.retrivePrivKey(this.user.keyID);
+            
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
-                , sign: crypto.rsa.signSHA1(cmd, recipinet.privKey)
+                , sign: crypto.rsa.signSHA1(cmd, privKey)
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
