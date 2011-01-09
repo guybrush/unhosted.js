@@ -13,7 +13,7 @@ function handleError(status, data, callback){
     }
 }
 
-define(['./util.js', './crypto'], function(util, crypto){
+define(['./util', './crypto'], function(util, crypto){
     var sendPost = util.sendPost;
 
     return {
@@ -30,14 +30,14 @@ define(['./util.js', './crypto'], function(util, crypto){
                 method: 'SET'
                 , user: this.user.id
                 , keyPath: keyPath
-                , value: crypto.AES.encryptCBC(value, ..);
+                , value: value
             });
 
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
                 , password: this.user.password
-                , sign: crypto.rsa.signSHA1(cmd, this.user.privKey);
+                , sign: crypto.rsa.signSHA1(cmd, this.user.privKey)
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
@@ -86,7 +86,7 @@ define(['./util.js', './crypto'], function(util, crypto){
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
-                , sign: crypto.rsa.signSHA1(cmd, recipinet.privKey);
+                , sign: crypto.rsa.signSHA1(cmd, recipinet.privKey)
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
 
