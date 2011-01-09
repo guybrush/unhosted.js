@@ -1,18 +1,18 @@
 <html>
-<script type="text/javascript" src="SubscribingPasswordMe.js"></script>
-<script type="text/javascript" src="../../unhosted/loader.js"></script>
+<!-- <script type="text/javascript" src="SubscribingPasswordMe.js"></script> -->
+<script type="text/javascript" src="../../scripts/require.js"></script>
 <script>
-    loadUnhosted('../../unhosted', function(err){
-        if(err) throw err;
+  require(['./unhosted'], function(unhosted){
+      console.log(unhosted);
 
-        // Load blog post
-        unhosted.importSub(SubscribingPasswordMe, "hardCodedSub");
-        document.getElementById("blogpost").innerHTML= unhosted.get("hardCodedSub", "myFirstUnhostedBlogPost");
-    });
+      // Load blog post
+      //unhosted.importSub(SubscribingPasswordMe, "hardCodedSub");
+      //document.getElementById("blogpost").innerHTML= unhosted.get("hardCodedSub", "myFirstUnhostedBlogPost");
+  });
 </script>
 <body>
-<H2>This code is only for demonstration and not safe to run in production.</H2>
-<H2>Only run it in a local development environment, never on a public IP or production server.</H2>
+<h2>This code is only for demonstration and not safe to run in production.</h2>
+<h2>Only run it in a local development environment, never on a public IP or production server.</h2>
 <div id="blogpost">Loading unhosted json...</div>
 </body>
 </html>
