@@ -1,0 +1,5 @@
+Unhosted.js
+===========
+
+Unhosted.js is a browser side library for communicating with a Unhosted storage
+node using the Unhosted JSON protocol.
