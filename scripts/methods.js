@@ -25,16 +25,16 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
          * not encrypt the value. The value is expected to be already encrypted
          * if that is even desired.
          *
-         * @param {String} keyPath The key path to set.
+         * @param {String} key The key path to set.
          * @param {String} value The value to set.
          * @param {Function} callback A function that will be called with the
          * argument (err) once the request completes.
          */
-        _set: function _set(keyPath, value, callback){
+        _set: function _set(key, value, callback){
             var cmd = JSON.stringify({
                 method: 'SET'
                 , user: this.user.id
-                , keyPath: keyPath
+                , key: key
                 , value: value
             });
 
@@ -58,17 +58,17 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
          * This function will _NOT_ verify the signature of the received cmd
          * string.
          *
-         * @param {String} keyPath The key path to get.
+         * @param {String} key The key path to get.
          * @param {Function} callback A function that will be called with the
          * arguments (err, data) once the request completes.
          */
-        _get: function _get(keyPath, callback) {
+        _get: function _get(key, callback) {
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: JSON.stringify({
                     method: 'GET'
                     , user: this.user.id
-                    , keyPath: keyPath
+                    , key: key
                 })
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
@@ -87,16 +87,16 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
          * if that is even desired.
          *
          * @param {User} recipinet The user the message is for.
-         * @param {String} keyPath The key path to send to.
+         * @param {String} key The key path to send to.
          * @param {String} value The value to send.
          * @param {Function} callback A function that will be called with the
          * argument (err).
          */
-        _send: function _send(recipient, keyPath, value, callback) {
+        _send: function _send(recipient, key, value, callback) {
             var cmd = JSON.stringify({
                     method: 'SEND'
                     , user: recipient.id
-                    , keyPath: keyPath
+                    , key: key
             });
 
             var privKey = keyStorage.retrivePrivKey(this.user.keyID);
@@ -118,17 +118,17 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
          * This function will _NOT_ verify the signature of the received cmd
          * string.
          *
-         * @param {String} keyPath The key path to receive from.
+         * @param {String} key The key path to receive from.
          * @param {Function} callback A function that will be called with the
          * argument (err, data).
          */
-        _receive: function _receive(keyPath, callback){
+        _receive: function _receive(key, callback){
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: JSON.stringify({
                     method: 'RECEIVE'
                     , user: this.user.id
-                    , keyPath: keyPath
+                    , key: key
                 })
             }, function postDone(err, status, data){
                 if(err) { callback && callback(err); return; }
