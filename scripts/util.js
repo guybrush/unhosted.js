@@ -27,7 +27,13 @@ function createXMLHTTPObject() {
 
 var util = {
     /**
-     * POST data to cloud, async style
+     * POST data to a unhosted node.
+     *
+     * @param {String} address The hostname/ip of the node.
+     * @param {String} uri The POST URI
+     * @param {Object} obj The JSON object to be POST'ed
+     * @param {Function} callback This function will be called once the POST
+     * request completes with the parameters (err, status, data).
      */
     sendPost: function sendPost(address, uri, obj, callback) {
         // XMLHttpRequest ready states
@@ -61,6 +67,17 @@ var util = {
             xmlHTTP.open("POST", URI, true);
         } catch (e) {
             callback && callback(err);
+        }
+    },
+
+    /**
+     * Copy all properties of obj2 into obj1. This overwrites already existing properties.
+     */
+    merge: function merge(obj1, obj2){
+        for(var prop in obj2) {
+            if(obj2.hasOwnProperty(prop)) {
+                obj1[prop] = obj2[prop];
+            }
         }
     }
 };

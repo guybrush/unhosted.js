@@ -5,9 +5,6 @@ define(['./crypto/rsa-sign'
         , './crypto/rng']
        , module);
 
-
-//
-
 function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
     var crypto = {
         // options

@@ -1,5 +1,6 @@
 /**
- * This is the prototype of the class 'Unhosted' defined in unhosted.js
+ * These are the low-level primitives of the Unhosted protocol upon which we
+ * build some higher level operations.
  */
 
 function handleError(status, data, err_callback, ok_callback){
@@ -20,6 +21,10 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
         /**
          * Send a SET command to the storage node.
          *
+         * This will sign the contents of the generated cmd object but it will
+         * not encrypt the value. The value is expected to be already encrypted
+         * if that is even desired.
+         *
          * @param {String} keyPath The key path to set.
          * @param {String} value The value to set.
          * @param {Function} callback A function that will be called with the
@@ -32,9 +37,9 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
                 , keyPath: keyPath
                 , value: value
             });
-            
+
             var privKey = keyStorage.retrivePrivKey(this.user.keyID);
-            
+
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
@@ -49,6 +54,9 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
 
         /**
          * Send a GET command to the storage node.
+         *
+         * This function will _NOT_ verify the signature of the received cmd
+         * string.
          *
          * @param {String} keyPath The key path to get.
          * @param {Function} callback A function that will be called with the
@@ -74,6 +82,10 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
         /**
          * Send a SEND command to the storage node
          *
+         * This will sign the contents of the generated cmd object but it will
+         * not encrypt the value. The value is expected to be already encrypted
+         * if that is even desired.
+         *
          * @param {User} recipinet The user the message is for.
          * @param {String} keyPath The key path to send to.
          * @param {String} value The value to send.
@@ -86,9 +98,9 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
                     , user: recipient.id
                     , keyPath: keyPath
             });
-            
+
             var privKey = keyStorage.retrivePrivKey(this.user.keyID);
-            
+
             sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
@@ -102,6 +114,9 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
 
         /**
          * Send a RECEIVE command to the storage node
+         *
+         * This function will _NOT_ verify the signature of the received cmd
+         * string.
          *
          * @param {String} keyPath The key path to receive from.
          * @param {Function} callback A function that will be called with the
