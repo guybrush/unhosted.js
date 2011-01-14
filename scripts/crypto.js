@@ -15,14 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 define(['./crypto/rsa-sign'
         , './crypto/sha1'
         , './crypto/aes_cbc'
         , './crypto/jsbn'
-        , './crypto/rng']
-       , module);
-
+        , './crypto/rng'],
 function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
     var crypto = {
         // options
@@ -183,4 +180,4 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
     } // crypto
 
     return crypto;
-}
+});

@@ -21,19 +21,17 @@
  * build some higher level operations.
  */
 
-function handleError(status, data, err_callback, ok_callback){
-    if(status == 200) {
-        ok_callback && ok_callback(null);
-    } else {
-        var res = JSON.parse(data);
-        var err = new Error(res.message);
-        // err.number = status;
-        err_callback && err_callback(err);
-    }
-}
-
 define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypto){
-    var sendPost = util.sendPost;
+    function handleError(status, data, err_callback, ok_callback){
+        if(status == 200) {
+            ok_callback && ok_callback(null);
+        } else {
+            var res = JSON.parse(data);
+            var err = new Error(res.message);
+            // err.number = status;
+            err_callback && err_callback(err);
+        }
+    }
 
     return {
         /**
@@ -58,7 +56,7 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
 
             var privKey = keyStorage.retrivePrivKey(this.user.keyID);
 
-            sendPost(this.address, this.postURI, {
+            util.sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
                 , password: this.user.password
@@ -81,7 +79,7 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
          * arguments (err, data) once the request completes.
          */
         _get: function _get(key, callback) {
-            sendPost(this.address, this.postURI, {
+            util.sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: JSON.stringify({
                     method: 'GET'
@@ -119,7 +117,7 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
 
             var privKey = keyStorage.retrivePrivKey(this.user.keyID);
 
-            sendPost(this.address, this.postURI, {
+            util.sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: cmd
                 , sign: crypto.rsa.signSHA1(cmd, privKey)
@@ -141,7 +139,7 @@ define(['./util', './key-storage', './crypto'], function(util, keyStorage, crypt
          * argument (err, data).
          */
         _receive: function _receive(key, callback){
-            sendPost(this.address, this.postURI, {
+            util.sendPost(this.address, this.postURI, {
                 protocol: this.proto
                 , cmd: JSON.stringify({
                     method: 'RECEIVE'

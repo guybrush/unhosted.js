@@ -16,34 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/***
- * Some util functions that would clutter 'unhosted.js'
- */
-
-
-/**
- * Try different constructors for an XMLHttpRequest
- */
-function createXMLHTTPObject() {
-    var XMLHttpFactories = [
-        function() { return new XMLHttpRequest() },
-        function() { return new ActiveXObject("Msxml2.XMLHTTP") },
-        function() { return new ActiveXObject("Msxml3.XMLHTTP") },
-        function() { return new ActiveXObject("Microsoft.XMLHTTP") }
-    ];
-    var xmlhttp = null;
-    for (var i=0; i < XMLHttpFactories.length ;i++) {
-        try {
-            xmlhttp = XMLHttpFactories[i]();
-        } catch (e) {
-            continue;
+define({
+    /**
+     * Try different constructors for an XMLHttpRequest
+     */
+    function createXMLHTTPObject() {
+        var XMLHttpFactories = [
+            function() { return new XMLHttpRequest() },
+            function() { return new ActiveXObject("Msxml2.XMLHTTP") },
+            function() { return new ActiveXObject("Msxml3.XMLHTTP") },
+            function() { return new ActiveXObject("Microsoft.XMLHTTP") }
+        ];
+        var xmlhttp = null;
+        for (var i=0; i < XMLHttpFactories.length ;i++) {
+            try {
+                xmlhttp = XMLHttpFactories[i]();
+            } catch (e) {
+                continue;
+            }
+            break;
         }
-        break;
-    }
-    return xmlhttp;
-}
+        return xmlhttp;
+    },
 
-var util = {
     /**
      * POST data to a unhosted node.
      *
@@ -61,9 +56,9 @@ var util = {
         var LOADING = 3;
         var DONE = 4;
 
-        var xmlHTTP = createXMLHTTPObject();
+        var xmlHTTP = this.createXMLHTTPObject();
         var URI = document.location.protocol
-            + '://' + address + uri;
+            + '//' + address + uri;
 
         xmlHTTP.onreadystatechange = function(){
             var state = xmlHTTP.readyState;
@@ -88,16 +83,18 @@ var util = {
         }
     },
 
-    /**
-     * Copy all properties of obj2 into obj1. This overwrites already existing properties.
-     */
-    merge: function merge(obj1, obj2){
-        for(var prop in obj2) {
-            if(obj2.hasOwnProperty(prop)) {
-                obj1[prop] = obj2[prop];
-            }
+    handlePostError: function handlePostError(status, data, err_callback, ok_callback){
+        if(typeof ok_callback === 'undefined') {
+            ok_callback = err_callback;
+        }
+
+        if(status == 200) {
+            ok_callback(null);
+        } else {
+            var res = JSON.parse(data);
+            var err = new Error(res.message);
+            // err.number = status;
+            err_callback(err);
         }
     }
-};
-
-define(util);
+});

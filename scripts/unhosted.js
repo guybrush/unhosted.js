@@ -20,8 +20,7 @@
 define(['./crypto'
         , './key-storage'
         , './util'
-        , './methods'], unhostedModule);
-
+        , './methods'],
 function unhostedModule(crypto, keyStorage, util, methods){
     var JSONtoCGI = util.JSONtoCGI;
     var sendPost = util.sendPost;
@@ -46,4 +45,4 @@ function unhostedModule(crypto, keyStorage, util, methods){
     Unhosted.prototype = methods;
 
     return Unhosted;
-} // function unhostedModule(..
+}); // function unhostedModule(..
