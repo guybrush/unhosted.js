@@ -83,7 +83,11 @@ define({
         }
     },
 
-    handlePostError: function handlePostError(status, data, err_callback, ok_callback){
+    handlePostError: function handlePostError(status
+                                              , data
+                                              , err_callback
+                                              , ok_callback)
+    {
         if(typeof ok_callback === 'undefined') {
             ok_callback = err_callback;
         }
