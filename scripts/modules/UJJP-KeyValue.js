@@ -28,25 +28,18 @@ function(modules, util, keyStorage, crypto) {
          * Send a SET command to the storage node.
          *
          * @param {String} key The key path to set.
-         * @param {Object} value Object with the properties 'value' and
-         * 'sessionKey'. The value should be a String, this value will be
-         * encrypted with the session key.
+         * @param {String} value The value that should be set. Symetric
+         * encryption of this value is not handled by this API! You have to do
+         * it yourself with crypto.aes.encryptCBC/decryptCBC
          * @param {Function} callback A function that will be called with the
          * argument (err) once the request completes.
          */
-        set: function set(key, val, callback){
-            if(typeof val !== 'object'
-               || typeof val.value !== 'string'
-               || typeof val.sessionKey !== 'string')
-            {
-                throw new Error('Invalid value object');
-            }
-
+        set: function set(key, value, callback){
             var cmd = JSON.stringify({
                 method: 'SET'
                 , user: this.user.id
                 , key: key
-                , value: crypto.aes.encryptCBC(val.value, val.sessionKey)
+                , value: value
             });
 
             var privKey = keyStorage.retrievePrivKey(this.user.keyID);
@@ -55,7 +48,7 @@ function(modules, util, keyStorage, crypto) {
                 protocol: KeyValue.proto
                 , cmd: cmd
                 , password: this.user.password
-                , sign: crypto.rsa.signSHA1(cmd, privKey)
+                , pubSign: crypto.rsa.signSHA1(cmd, privKey)
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
@@ -86,11 +79,11 @@ function(modules, util, keyStorage, crypto) {
                     var res = JSON.parse(data);
                     var pubKey = keyStorage.retrievePubKey(self.user.keyID);
 
-                    if(!crypto.verifySHA1(res.pubSign, reponse.value)) {
+                    if(!crypto.rsa.verifySHA1(res.pubSign, res.cmd, pubKey)) {
                         callback(new Error('Invalid signature'));
                     }
 
-                    callback(null, data);
+                    callback(null, res.cmd);
                 });
             });
         }
