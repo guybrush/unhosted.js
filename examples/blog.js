@@ -30,15 +30,15 @@ function(Unhosted, User, crypto, keyStorage, KeyValue){
             // Get the post count
             server.get('/AwesomeBlog/posts', function(err, data){
                 if(err && err.number != 404) { error(err); return; }
-                if(err && err.number == 404) { data = {value: 0}; }
+                if(err && err.number == 404) { data = '{"value": "0"}'; }
                 
                 data = JSON.parse(data);
-                data.value = data.value >= 0 ? data.value : 0;
+                var count = parseInt(data.value, 10);
+                count = count >= 0 ? count : 0;
                 
                 var sessionKey = localStorage.getItem('/unhosted/blogsessionKey');
                 var val = crypto.aes.encryptCBC($('#blogpost').val(), sessionKey);
 
-                var count = parseInt(data.value, 10);
                 server.set('/AwesomeBlog/posts/' + count, val, function(err, data){
                     if(err) { error(err); return; }
                     
