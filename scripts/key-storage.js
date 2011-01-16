@@ -57,7 +57,7 @@ define(['./crypto'], function(crypto){
         return keyID;
     }
 
-    function retreive(storage, keyID){
+    function retrieve(storage, keyID){
         var keyType = storage === localStorage ? 'public' : 'private';
         var keyPath = '/unhosted/rsaKeys/'
             + '/' + keyType + '/'
@@ -95,12 +95,12 @@ define(['./crypto'], function(crypto){
         },
 
         /**
-         * Retreive a rsa public key from local storage
+         * Retrieve a rsa public key from local storage
          * 
          * @param keyID The keyID (aka. fingerprint) of the rsaKey.
          * @return Returns the key as an instance of rsa.PubKey
          */
-        retreivePubKey: function(keyID){
+        retrievePubKey: function(keyID){
             return retrieve(localStorage, rsaKey);
         },
 
@@ -120,8 +120,8 @@ define(['./crypto'], function(crypto){
          * @param keyID The keyID (aka. fingerprint) of the rsaKey.
          * @return Returns the key as an instance of rsa.PrivKey
          */
-        retreivePrivKey: function(keyID){
-            return retrive(sessionStorage, keyID);
+        retrievePrivKey: function(keyID){
+            return retrieve(sessionStorage, keyID);
         }
     }
 });
