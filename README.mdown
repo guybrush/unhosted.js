@@ -1,5 +1,23 @@
 Unhosted.js
 ===========
 
-Unhosted.js is a browser side library for communicating with a Unhosted storage
-node using the Unhosted JSON protocol.
+[Unhosted.js](https://github.com/DanielG/unhosted.js) is a browser side library
+implementing the [Unhosted](https://github.com/michiel-unhosted/unhosted) module
+discovery specification. It can be used by web-application developers to make
+their applications _unhosted_.
+
+_Unhosted_ is a distributed project aiming to free users from the monopolies that
+current 'Web 2.0' services lock their users into. The _Unhosted module discovery
+specification_ specifies how to discover per-user servers that handle this
+users' data and processing.
+
+Unhosted.js is going to support as many _Unhosted modules_ as possible. Examples
+for modules that will be implemented in the future include WebDAV, couchDB, realtime
+(PUSH) updates via WebSockets and long polling etc. and many more.
+
+Contributing
+============
+
+Currently _Unhosted.js_ is under heavy development and now where near a stable
+state. Feel free to send in pull requests or patches if you want/can help
+out. We always need more developers :)
