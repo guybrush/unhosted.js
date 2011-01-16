@@ -42,6 +42,12 @@ define(['./crypto/sha1'], function(sha1){
     User.prototype.keyID = null;
 
     /**
+     * Hash map of the servers that this user has available.
+     * In the form: { 'KeyValue': 'example.com', 'MessageQueue': 'example.net' }
+     */
+    User.prototype.servers = {}
+
+    /**
      * Before a User object can be used with the API it has to be initialized by
      * getting its id. Right now this just does sha1(alias) but in future
      * version this might become more sophisticated.
