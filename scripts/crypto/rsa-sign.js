@@ -2,8 +2,8 @@
 // AUTO-GENERATED FROM ../original-libs/rsa-sign.js __DO NOT EDIT__
 //
 
-define(['./rsa', './sha1']
-, function(RSAKey, sha1){
+define(['./rsa', './jsbn', './sha1']
+, function(RSAKey, BigInteger, sha1){
 
 //
 // rsa-sign.js - adding signing functions to RSAKey class.
@@ -44,6 +44,10 @@ _RSASIGN_DIHEAD['sha1'] = "3021300906052b0e03021a05000414";
 //_RSASIGN_DIHEAD['sha512'] = "3051300d060960864801650304020305000440";
 var _RSASIGN_HASHHEXFUNC = [];
 _RSASIGN_HASHHEXFUNC['sha1'] = sha1;
+
+function parseBigInt(str,r) {
+    return new BigInteger(str,r);
+}
 
 // ========================================================================
 // Signature Generation

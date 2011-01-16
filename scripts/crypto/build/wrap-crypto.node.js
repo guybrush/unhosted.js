@@ -35,6 +35,7 @@ var o = {
     , 'rsa-sign.js': {
         '.depends': {
             'RSAKey': './rsa'
+            , 'BigInteger': './jsbn'
             , 'sha1': './sha1'
         }
         , '.exports': 'RSAKey'

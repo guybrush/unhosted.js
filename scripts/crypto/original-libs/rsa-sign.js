@@ -38,6 +38,10 @@ _RSASIGN_DIHEAD['sha1'] = "3021300906052b0e03021a05000414";
 var _RSASIGN_HASHHEXFUNC = [];
 _RSASIGN_HASHHEXFUNC['sha1'] = sha1;
 
+function parseBigInt(str,r) {
+    return new BigInteger(str,r);
+}
+
 // ========================================================================
 // Signature Generation
 // ========================================================================
