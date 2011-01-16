@@ -97,7 +97,7 @@ define({
         } else {
             var res = JSON.parse(data);
             var err = new Error(res.message);
-            // err.number = status;
+            err.number = status;
             err_callback(err);
         }
     }
