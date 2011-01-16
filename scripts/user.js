@@ -43,7 +43,8 @@ define(['./crypto/sha1'], function(sha1){
 
     /**
      * Hash map of the servers that this user has available.
-     * In the form: { 'KeyValue': 'example.com', 'MessageQueue': 'example.net' }
+     * In the form: { 'KeyValue': 'example.com', 'WebDAV':
+     * 'https://example.net/dav/user' }
      */
     User.prototype.servers = {}
 

@@ -16,12 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-define(['./modules/available', './modules'], function(modules){
+define(['./modules', './modules/available'], function(modules){
     return {
         load: function(name, req, load, config){
-            var modulePath = modules.get(name);
-            req(['./' + modulePath], function(module){
-                load(module);
+            var moduleName = modules.get(name);
+            req([moduleName], function(module){
+                load(function(){
+                    return module;
+                });
             });
         }
     }

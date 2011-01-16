@@ -44,7 +44,7 @@ define(['./crypto'], function(crypto){
         var keyType = storage === localStorage ? 'public' : 'private';
         var keyID = crypto.rsa.keyID(rsaKey)
         var keyPath = '/unhosted/rsaKeys/'
-            + '/' + keyType + '/'
+            + keyType + '/'
             + keyID;
 
         if(keyType === 'private') {
@@ -60,21 +60,19 @@ define(['./crypto'], function(crypto){
     function retrieve(storage, keyID){
         var keyType = storage === localStorage ? 'public' : 'private';
         var keyPath = '/unhosted/rsaKeys/'
-            + '/' + keyType + '/'
-            + crypto.rsa.keyID(rsaKey);
+            + keyType + '/' + keyID;
 
-        var key = storage.getItem(key);
+        var key = storage.getItem(keyPath);
 
         if(typeof key === 'undefined') {
             throw new Error('Key not found ' + keyID);
         }
 
-        key = JSON.parse(key);
         if(keyType === 'public') {
-            key = new PubKey(key);
+            key = new PubKey(JSON.parse(key));
         } else {
             key = crypto.aes.decryptCBC(key, sessionStorageKeys[keyID]);
-            key = new PrivKey(key);
+            key = new PrivKey(JSON.parse(key));
         }
 
         return key;
@@ -101,7 +99,7 @@ define(['./crypto'], function(crypto){
          * @return Returns the key as an instance of rsa.PubKey
          */
         retrievePubKey: function(keyID){
-            return retrieve(localStorage, rsaKey);
+            return retrieve(localStorage, keyID);
         },
 
         /**
