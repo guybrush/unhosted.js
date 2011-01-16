@@ -33,12 +33,12 @@ define(['./crypto'], function(crypto){
      * private keys will be stored AES encrypted with the key stored in this
      * object. The property is the rsa keyID and the value is random the AES-CBC
      * key
-     * 
+     *
      * Although javascript variables might also be swapped out to the hard drive
      * this is less likely to happen.
      */
     var sessionStorageKeys = {};
-    
+
     function store(storage, rsaKey){
         var key = JSON.stringify(rsaKey);
         var keyType = storage === localStorage ? 'public' : 'private';
@@ -46,7 +46,7 @@ define(['./crypto'], function(crypto){
         var keyPath = '/unhosted/rsaKeys/'
             + '/' + keyType + '/'
             + keyID;
-        
+
         if(keyType === 'private') {
             var aesKey = crypto.random.bytes(16).join('');
             sessionStorageKeys[keyID] = aesKey;
@@ -62,9 +62,9 @@ define(['./crypto'], function(crypto){
         var keyPath = '/unhosted/rsaKeys/'
             + '/' + keyType + '/'
             + crypto.rsa.keyID(rsaKey);
-        
+
         var key = storage.getItem(key);
-        
+
         if(typeof key === 'undefined') {
             throw new Error('Key not found ' + keyID);
         }
@@ -80,7 +80,7 @@ define(['./crypto'], function(crypto){
         return key;
     }
 
-    
+
     // TODO: method to remove (private) key
     return {
         /**
@@ -96,7 +96,7 @@ define(['./crypto'], function(crypto){
 
         /**
          * Retrieve a rsa public key from local storage
-         * 
+         *
          * @param keyID The keyID (aka. fingerprint) of the rsaKey.
          * @return Returns the key as an instance of rsa.PubKey
          */
@@ -116,7 +116,7 @@ define(['./crypto'], function(crypto){
 
         /**
          * Retreive a rsa private key from session storage
-         * 
+         *
          * @param keyID The keyID (aka. fingerprint) of the rsaKey.
          * @return Returns the key as an instance of rsa.PrivKey
          */
