@@ -73,6 +73,9 @@ var o = {
         ]
         , '.exports': 'pidCrypt.AES.CBC'
     }
+    , 'sjcl/sjcl.js': {
+        '.exports': 'sjcl'
+    }
 };
 
 
