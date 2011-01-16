@@ -8,5 +8,5 @@
  */
 
 define(['modules/UJJP-KeyValue'
-        , 'modules/UUJP-MessageQueue']
+        , 'modules/UJJP-MessageQueue']
        , function(){ return {}; });
