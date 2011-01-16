@@ -20,7 +20,7 @@ define({
     /**
      * Try different constructors for an XMLHttpRequest
      */
-    function createXMLHTTPObject() {
+    createXMLHTTPObject: function createXMLHTTPObject() {
         var XMLHttpFactories = [
             function() { return new XMLHttpRequest() },
             function() { return new ActiveXObject("Msxml2.XMLHTTP") },
