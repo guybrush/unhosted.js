@@ -72,12 +72,20 @@ define(function(){
         }
 
         if(status == 200) {
-            ok_callback(null);
+            try {
+                ok_callback(null);
+            } catch(e) {
+                err_callback(e);
+            }
         } else {
-            var res = JSON.parse(data);
-            var err = new Error(res.message);
-            err.number = status;
-            err_callback(err);
+            try {
+                var res = JSON.parse(data);
+                var err = new Error(res.message);
+                err.number = status;
+                err_callback(err);
+            } catch(e) {
+                err_callback(e);
+            }
         }
     }
 

@@ -100,7 +100,6 @@ function(modules, util, keyStorage, crypto) {
                 if(err) { callback(err); return; }
 
                 util.UJJP.handlePostError(status, data, callback, function ok(){
-                    // FIXME: data could be invalid JSON, check for that
                     var res = JSON.parse(data);
                     var senderPubKey =
                         keyStorage.retrievePubKey(res.senderKeyID);
