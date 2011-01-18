@@ -63,7 +63,7 @@ function(modules, util, keyStorage, crypto) {
                 , value: value
             });
 
-            util.sendPost(this.address, this.postURI, {
+            util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: MessageQueue.proto
                 , cmd: cmd
                 , password: this.user.password
@@ -71,7 +71,7 @@ function(modules, util, keyStorage, crypto) {
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
-                util.handlePostError(status, data, callback);
+                util.UJJP.handlePostError(status, data, callback);
             });
         },
 
@@ -84,7 +84,7 @@ function(modules, util, keyStorage, crypto) {
          */
         receive: function receive(key, callback) {
             var self = this;
-            util.sendPost(this.address, this.postURI, {
+            util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: MessageQueue.proto
                 , cmd: JSON.stringify({
                     method: 'RECEIVE'
@@ -95,7 +95,7 @@ function(modules, util, keyStorage, crypto) {
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
-                util.handlePostError(status, data, callback, function ok(){
+                util.UJJP.handlePostError(status, data, callback, function ok(){
                     // FIXME: data could be invalid JSON, check for that
                     var res = JSON.parse(data);
                     var senderPubKey =

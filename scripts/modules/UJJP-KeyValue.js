@@ -44,7 +44,7 @@ function(modules, util, keyStorage, crypto) {
 
             var privKey = keyStorage.retrievePrivKey(this.user.keyID);
 
-            util.sendPost(this.address, this.postURI, {
+            util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: KeyValue.proto
                 , cmd: cmd
                 , password: this.user.password
@@ -52,7 +52,7 @@ function(modules, util, keyStorage, crypto) {
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
-                util.handlePostError(status, data, callback);
+                util.UJJP.handlePostError(status, data, callback);
             });
         },
 
@@ -65,7 +65,7 @@ function(modules, util, keyStorage, crypto) {
          */
         get: function get(key, callback) {
             var self = this;
-            util.sendPost(this.address, this.postURI, {
+            util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: KeyValue.proto
                 , cmd: JSON.stringify({
                     method: 'GET'
@@ -75,7 +75,7 @@ function(modules, util, keyStorage, crypto) {
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
-                util.handlePostError(status, data, callback, function ok(){
+                util.UJJP.handlePostError(status, data, callback, function ok(){
                     var res = JSON.parse(data);
                     var pubKey = keyStorage.retrievePubKey(self.user.keyID);
 
