@@ -44,13 +44,15 @@ function(modules, util, keyStorage, crypto) {
             // the case a hash of the message should be included to be sure the
             // message was actually for the user trying to decrypt it.
             var value = {
+                // Including the date is never a bad idea
                 date: (new Date()).toString()
 
+                // Sender information
                 , sender: this.user.id
                 , senderKeyID: this.user.keyID
 
+                // The message
                 , messageSignature: crypto.rsa.signSHA1(message, privKey)
-
                 , encryptedMessage: crypto.aes.encryptCBC(message, sessionKey)
                 , encryptedSessionKey: crypto.rsa.encrypt(sessionKey
                                                           , recipientPubKey)
@@ -59,14 +61,13 @@ function(modules, util, keyStorage, crypto) {
             var cmd = JSON.stringify({
                 method: 'SEND'
                 , user: this.recipient.id
-                , key: key
+                , keyHash: key
                 , value: value
             });
 
             util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: MessageQueue.proto
-                , cmd: cmd
-                , password: this.user.password
+                , command: cmd
                 , pubSign: crypto.rsa.signSHA1(cmd, privKey)
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
@@ -84,14 +85,17 @@ function(modules, util, keyStorage, crypto) {
          */
         receive: function receive(key, callback) {
             var self = this;
+
+            var cmd = JSON.stringify({
+                method: 'RECEIVE'
+                , user: this.user.id
+                , keyHash: key
+            });
+
             util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: MessageQueue.proto
-                , cmd: JSON.stringify({
-                    method: 'RECEIVE'
-                    , user: this.user.id
-                    , password: this.user.password
-                    , key: key
-                })
+                , password: this.user.password
+                , command: cmd
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
@@ -125,6 +129,7 @@ function(modules, util, keyStorage, crypto) {
                     callback(null, {
                         date: res.date
                         , sender: res.sender
+                        , senderKeyID: res.senderKeyID
                         , message: message
                     });
                 });

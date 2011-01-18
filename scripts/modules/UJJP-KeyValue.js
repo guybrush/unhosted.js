@@ -25,7 +25,7 @@ function(modules, util, keyStorage, crypto) {
         postURI: '/unhosted/cloudside/unhosted.php',
 
         /**
-         * Send a SET command to the storage node.
+         * SET the value of a key-value pair.
          *
          * @param {String} key The key path to set.
          * @param {String} value The value that should be set. Symetric
@@ -38,7 +38,7 @@ function(modules, util, keyStorage, crypto) {
             var cmd = JSON.stringify({
                 method: 'SET'
                 , user: this.user.id
-                , key: key
+                , keyHash: key
                 , value: value
             });
 
@@ -46,8 +46,8 @@ function(modules, util, keyStorage, crypto) {
 
             util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: KeyValue.proto
-                , cmd: cmd
                 , password: this.user.password
+                , command: cmd
                 , pubSign: crypto.rsa.signSHA1(cmd, privKey)
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
@@ -57,21 +57,24 @@ function(modules, util, keyStorage, crypto) {
         },
 
         /**
-         * Send a GET command to the storage node.
+         * GET the value of a key-value pair
          *
          * @param {String} key The key path to get.
          * @param {Function} callback A function that will be called with the
-         * arguments (err, value) once the request completes.
+         * arguments (err, value [, cmdStr]) once the request completes.
          */
         get: function get(key, callback) {
             var self = this;
+
+            var cmd = JSON.stringify({
+                method: 'GET'
+                , user: this.user.id
+                , keyHash: key
+            });
+
             util.UJJP.sendPost(this.address, this.postURI, {
                 protocol: KeyValue.proto
-                , cmd: JSON.stringify({
-                    method: 'GET'
-                    , user: this.user.id
-                    , key: key
-                })
+                , command: cmd
             }, function postDone(err, status, data){
                 if(err) { callback(err); return; }
 
@@ -80,10 +83,12 @@ function(modules, util, keyStorage, crypto) {
                     var pubKey = keyStorage.retrievePubKey(self.user.keyID);
 
                     if(!crypto.rsa.verifySHA1(res.pubSign, res.cmd, pubKey)) {
-                        callback(new Error('Invalid signature'));
+                        throw new Error('Invalid signature');
                     }
 
-                    callback(null, res.cmd);
+                    var cmd = JSON.parse(res.cmd);
+
+                    callback(null, cmd.value, res.cmd);
                 });
             });
         }
