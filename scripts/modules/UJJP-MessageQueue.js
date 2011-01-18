@@ -36,7 +36,7 @@ function(modules, util, keyStorage, crypto) {
         send: function send(recipinet, key, message, callback){
             var recipientPubKey = keyStorage.retrievePubKey(recipient.keyID);
             var privKey = keyStorage.retrievePrivKey(this.user.keyID);
-            var sessionKey = crypto.random.bytes(16).join('');
+            var sessionKey = crypto.sessionKey();
 
             // TESTME: do we need a checksum of the message?
             // what if somebody tries to decrypt a message that was not

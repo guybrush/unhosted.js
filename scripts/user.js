@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-define(['./crypto/sha1'], function(sha1){
+define(['./crypto'], function(crypto){
     /**
      * Create a new User object.
      *
@@ -54,7 +54,7 @@ define(['./crypto/sha1'], function(sha1){
      * version this might become more sophisticated.
      */
     User.prototype.getID = function(callback){
-        this.id = sha1(this.alias);
+        this.id = crypto.hash(this.alias);
         callback(null, this.id);
     }
 

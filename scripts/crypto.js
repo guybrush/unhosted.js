@@ -26,6 +26,15 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
         aesBits: 128,
 
         // methods
+
+        hash: function(plaintext){
+            return sha1(plaintext);
+        },
+        
+        sessionKey: function(){
+            crypto.random.bytes(crypto.aesBits / 8).join('');
+        },
+        
         rsa: {
             /**
              * RSA public key constructor.
@@ -78,7 +87,7 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
              * concatenated with the key modulus (n)
              */
             keyID: function keyId(key){
-                return sha1(key.e + key.n);
+                return crypto.hash(key.e + key.n);
             },
 
             /**
