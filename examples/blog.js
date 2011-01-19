@@ -13,9 +13,7 @@ function(Unhosted, User, crypto, keyStorage, KeyValue){
                              , crypto.random.bytes(16).join(''));
     }
 
-    init();
-    
-    function init(){
+    (function init(){
         user = new User('me@example.com');
         user.password = '1234';
         user.keyID = keyID;
@@ -23,85 +21,94 @@ function(Unhosted, User, crypto, keyStorage, KeyValue){
             server = new KeyValue(user, document.location.host);
             setup();
         });
-    }
-    
+    })();
+
     function setup(){
         $('#post').click(function(){
+            $('#post').attr('disabled', true);
+
             // Get the post count
-            server.get('/AwesomeBlog/posts', function(err, data){
+            server.get('/AwesomeBlog/posts', function(err, value){
                 if(err && err.number != 404) { error(err); return; }
-                if(err && err.number == 404) { data = '{"value": "0"}'; }
-                
-                data = JSON.parse(data);
-                var count = parseInt(data.value, 10);
+                if(err && err.number == 404) { value = '0'; }
+
+                var count = parseInt(value, 10);
                 count = count >= 0 ? count : 0;
-                
+
                 var sessionKey = localStorage.getItem('/unhosted/blogsessionKey');
                 var val = crypto.aes.encryptCBC($('#blogpost').val(), sessionKey);
 
                 server.set('/AwesomeBlog/posts/' + count, val, function(err, data){
                     if(err) { error(err); return; }
-                    
+
                     count++;
                     server.set('/AwesomeBlog/posts'
                                , count.toString()
                                , function(err, data)
                                {
                                    if(err) { error(err); return; }
-                                   console.log('count updated');
                                });
-                    console.log('post set');
+
+                    setTimeout(function(){
+                        checkPosts();
+                    }, 10);
                 });
             });
         });
-        
+
         checkPosts();
     }
-    
+
     function checkPosts(){
         server.get('/AwesomeBlog/posts', fetchPosts);
     }
-    
-    function fetchPosts(err, data){
+
+    function fetchPosts(err, value){
         if (err) { error(err); return; }
         try {
-            console.log(data);
-            var cmd = JSON.parse(data);
-            var lastPost = cmd.value;
-            
+            var lastPost = parseInt(value, 10);
+
             var posts = [];
             var running = 0;
             for(var i=lastPost-1; i >= 0 ;i--) {
                 running++;
-                server.get('/AwesomeBlog/posts/' + i, function(err, data){
-                    running--;
-                    posts.push(data);
-                    
-                    if(running === 0) {
-                        done(posts);
-                    }
-                });
+                (function(i){
+                    server.get('/AwesomeBlog/posts/' + i, function(err, post){
+                        running--;
+                        console.log(i);
+                        posts[i] = post;
+
+                        if(running === 0) {
+                            done(posts);
+                        }
+                    });
+                })(i);
             }
         } catch(e) {
             error(e);
         }
 
+        // Re-enable the post button _after_ doing the synchronous
+        // decryption. Otherwise click events will queue up an trigger a some
+        // more post actions when the browser returns to the event loop
+        $('#post').attr('disabled', false);
+
         function done(posts){
+            $('#blogposts').html('');
             var sessionKey = localStorage.getItem('/unhosted/blogsessionKey');
-            console.log('done');
-            console.log(posts);
-            posts.forEach(function(post){
-                $('#blogposts').append('<p>'
-                 + crypto.aes.decryptCBC(JSON.parse(post).value, sessionKey)  +'</p>');
+            posts.forEach(function(post, i){
+                var p = crypto.aes.decryptCBC(post, sessionKey);
+                $('#blogposts').append('<p>'+ i +'| '+ p +'</p>');
             });
         }
     }
-    
+
     function error(err){
         if(err && err.number == 404) {
             $('#blogposts').html('<p>No blogposts found.</p>');
         } else {
             $('#blogposts').html('<p>ERROR: ' + err.message +'</p>');
+            throw err;
             return;
         }
     }
