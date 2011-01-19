@@ -1,11 +1,13 @@
 require({ baseUrl: "/scripts/", waitSeconds: 2 }
         , ['crypto', 'key-storage'],
 function(crypto, keyStorage){
+    window.UnhostedExamples = {};
+
     $(window).bind('hashchange', hash);
     if(location.hash) {
         hash();
     }
-    
+
     function hash(){
         var example = location.hash.slice(1);
         require(['./' + example], function(ex){
@@ -20,6 +22,6 @@ function(crypto, keyStorage){
     var d = '19c13eed33fdfcdadbeb51322dfcc715bd471f5d53db7647ad1d1a6bb31d3354875d00d60f30431b06945eb0b6a6c541ed411bac195e6e359fafd9ee4bf5d5bf97cf85ee59821d5aed1414f0d81f0e247b81542d43eea345d60b9f316cecf317e4fdea57f62dbdf5c974b256ef86f4b5b1ffddca750ca24de67973a32560c0bbfd19520aa8b91374cb7d8b6017a0d8ad7b6802a497faa0d1b429a19cc77e4901';
     var key = new crypto.rsa.PrivKey(n, e, d);
     // Store the key for later use
-    window.keyID = keyStorage.storePrivKey(key);
+    UnhostedExamples.publisherKeyID = keyStorage.storePrivKey(key);
     keyStorage.storePubKey({n: key.n, e: key.e});
 });

@@ -16,47 +16,74 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-define(['./crypto'], function(crypto){
-    /**
-     * Create a new User object.
-     *
-     * @constructor
-     * @param alias The alias for the user id. The alias is a string that points
-     * to a userID. A userID is a globally unique identifier that directly links
-     * to a user. The alias is, well, a alias to this userID.
-     */
-    var User = function(alias){
-        this.alias = alias;
-    };
+define(['./crypto', './util'], function(crypto){
+    var User = {};
 
     /**
-     * The user's password.
+     * Alias to the user UID
+     *
+     * In the general case this can be a email address or a JID. Identifying a
+     * user by a UID has the advantage of the UID being portable. Multible
+     * aliases can point to the same UID. Thus a user can change his email
+     * address without losing his identity.
+     *
+     * Right now the 'UID' is just a hash of the alias but in the future this
+     * might change.
      */
-    User.prototype.password = null;
+    User.alias = null;
 
     /**
      * The fingerprint of the user's key. The fingerprints of public and private
      * key are the same. Thus this identifies public and private key at the same
      * time. The actual keys can be retrieved using the key-storage module.
      */
-    User.prototype.keyID = null;
+    User.keyID = null;
 
     /**
-     * Hash map of the servers that this user has available.
-     * In the form: { 'KeyValue': 'example.com', 'WebDAV':
-     * 'https://example.net/dav/user' }
+     * The server the user has registered.
+     * Something like the following, highly depends on the module.
+     *
+     *     { 'KeyValue':
+     *       { address: 'example.org'
+     *       , user: 'dxld'
+     *       , password: '1234me'
+     *       }
+     *     }
      */
-    User.prototype.servers = {}
+    User.servers = {};
 
     /**
-     * Before a User object can be used with the API it has to be initialized by
-     * getting its id. Right now this just does sha1(alias) but in future
-     * version this might become more sophisticated.
+     * Fetch a user's UID
+     *
+     * Right now this just does sha1(alias) but in future version this might
+     * become more sophisticated.
      */
-    User.prototype.getID = function(callback){
+    User.getID = function(callback){
         this.id = crypto.hash(this.alias);
         callback(null, this.id);
     }
 
-    return User;
+    User.getAuth = function(protocol){
+        var self = this;
+        var p = protocol.split(';');
+        var password = this.servers[protocol] &&
+            this.servers[protocol].password;
+        if(password) return;
+
+        p.forEach(function(s){
+            password = password || self.servers[s] && self.servers[s].password
+        });
+
+        return password;
+    }
+
+    function createUser(alias) {
+        var u = Object.create(User);
+        u.alias = alias;
+        return u;
+    }
+
+    createUser.User = User;
+
+    return createUser;
 });

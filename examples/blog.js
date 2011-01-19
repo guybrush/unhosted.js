@@ -1,5 +1,10 @@
-require(['unhosted', 'user', 'crypto', 'key-storage', 'unhosted!KeyValue'],
-function(Unhosted, User, crypto, keyStorage, KeyValue){
+require(['unhosted'
+         , 'user'
+         , 'crypto'
+         , 'key-storage'
+         , 'util'
+         , 'unhosted!KeyValue'],
+function(Unhosted, createUser, crypto, keyStorage, util, KeyValue){
     $('#example')
         .html('<div id="blogposts"></div>'
               + '<textarea id="blogpost" rows="5" cols="40">Hello World!</textarea>'
@@ -14,11 +19,20 @@ function(Unhosted, User, crypto, keyStorage, KeyValue){
     }
 
     (function init(){
-        user = new User('me@example.com');
-        user.password = '1234';
-        user.keyID = keyID;
+        user = createUser('me@example.com');
+        user.keyID = UnhostedExamples.publisherKeyID;
         user.getID(function(){
-            server = new KeyValue(user, document.location.host);
+            user.servers = {
+                'KeyValue-0.2': {
+                    server: 'localhost:1337'
+                    , 'user': user.id
+                    , 'password': '1234'
+                }
+            };
+
+            server = KeyValue.create(user);
+            // TODO: get address from user login
+            server.address = document.location.host;
             setup();
         });
     })();
@@ -75,7 +89,6 @@ function(Unhosted, User, crypto, keyStorage, KeyValue){
                 (function(i){
                     server.get('/AwesomeBlog/posts/' + i, function(err, post){
                         running--;
-                        console.log(i);
                         posts[i] = post;
 
                         if(running === 0) {
@@ -108,6 +121,8 @@ function(Unhosted, User, crypto, keyStorage, KeyValue){
             $('#blogposts').html('<p>No blogposts found.</p>');
         } else {
             $('#blogposts').html('<p>ERROR: ' + err.message +'</p>');
+            var stack = err.stack || err.stacktrace;
+            console.log(stack);
             throw err;
             return;
         }
