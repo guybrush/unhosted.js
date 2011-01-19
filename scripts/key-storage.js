@@ -58,6 +58,8 @@ define(['./crypto'], function(crypto){
     }
 
     function retrieve(storage, keyID){
+        if(!keyID && !storage) { throw new Error('Invalid argument'); }
+
         var keyType = storage === localStorage ? 'public' : 'private';
         var keyPath = '/unhosted/rsaKeys/'
             + keyType + '/' + keyID;
