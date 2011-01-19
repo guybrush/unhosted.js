@@ -27,14 +27,14 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
 
         // methods
 
-        hash: function(plaintext){
+        hash: function hash(plaintext){
             return sha1(plaintext);
         },
-        
-        sessionKey: function(){
+
+        sessionKey: function sessionKey(){
             crypto.random.bytes(crypto.aesBits / 8).join('');
         },
-        
+
         rsa: {
             /**
              * RSA public key constructor.
@@ -44,7 +44,7 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
              *
              * @constructor
              */
-            PubKey: function(N, E){
+            PubKey: function PubKey(N, E){
                 if(typeof N === 'object' && typeof E === 'undefined') {
                     this.n = N.n;
                     this.e = N.e;
@@ -63,7 +63,7 @@ function module(RsaKey, sha1, AES_CBC, BigInteger, Random){
              *
              * @constructor
              */
-            PrivKey: function(N, E, D){
+            PrivKey: function PrivKey(N, E, D){
                 if(typeof N === 'object'
                    && typeof E === 'undefined'
                    && typeof D === 'undefined')
